@@ -57,7 +57,22 @@ function createPassword(passowrd_to_hash)
     return bcrypt.hashSync(passowrd_to_hash, 5);
 }
 
-console.log(createPassword(password))
+const path = "D:/test_backup";
+
+function getDirectories(current_path)
+{
+  var file_list = fs.readdirSync(current_path, { withFileTypes: true });
+  var return_file_list = []
+  file_list.forEach(function(x,i) {
+    if (x.isDirectory())return_file_list.push({name: x["name"], directory: x.isDirectory()})
+  } ) 
+  file_list.forEach(function(x,i) {
+    if (!x.isDirectory())return_file_list.push({name: x["name"], directory: x.isDirectory()})
+  } ) 
+  return return_file_list;
+}
+
+
 const app = express();
 app.use(cors());
 app.use(bodyParser.json());
@@ -93,6 +108,22 @@ app.post('/login', (req, res, next) => {
       })
 
 
+})
+
+console.log("He")
+app.post('/fileexplorer', (req, res, next) => {
+  var current_path = path + req.body.directory;
+  console.log(current_path);
+  if (!fs.existsSync(current_path))
+  {
+    console.log("failed Dir")
+    return res.status(401).json({
+          title: 'path does not exist ',
+          error: 'invalid credentials'
+        })
+  }
+  var file_list = getDirectories(current_path);
+  res.status(200).send(file_list);
 })
 
 const port = process.env.PORT || 5000;
