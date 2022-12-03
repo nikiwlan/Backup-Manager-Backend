@@ -1,10 +1,12 @@
+
+
 const express = require('express');
+const bodyParser = require('body-parser');
 const bcrypt = require('bcrypt');
 const cors = require('cors');
 const jwt = require('jsonwebtoken');
 var fs = require('fs');
 const formidable = require('express-formidable');
-
 
 const saltRounds = 10
 const password = "Admin@123"
@@ -14,7 +16,7 @@ function createPassword(passowrd_to_hash)
     return bcrypt.hashSync(passowrd_to_hash, 5);
 }
 
-const path = "D:/test_backup";
+const path_use = "D:/test_backup";
 
 function getDirectories(current_path)
 {
@@ -33,8 +35,10 @@ function getDirectories(current_path)
 const app = express();
 app.use(cors());
 app.use(formidable());
+app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({ extended: false }));
 var data = JSON.parse(fs.readFileSync( "./data.json", {encoding:'utf8', flag:'r'}))
-console.log(data)
+
 function checkPassword(passowrd_to_check, hash)
 {
     return bcrypt.compareSync(passowrd_to_check, hash);
@@ -50,14 +54,12 @@ function checkUser(username, password, users)
 }
 
 app.post('/login', (req, res, next) => {
-    var status = checkUser(req.fields.username, req.fields.password, data["users"])
-    console.log(status);
+    var status = checkUser(req.body.username, req.body.password, data["users"])
     if (status == -1) return res.status(401).json({
         title: 'invalid username or ',
         error: 'invalid credentials'
       })
-      console.log("ok");
-      let token = jwt.sign({ userId: req.fields.username}, 'secretkey');
+      let token = jwt.sign({ userId: req.body.username}, 'secretkey');
       return res.status(200).json({
         title: 'login sucess',
         token: token
@@ -66,9 +68,8 @@ app.post('/login', (req, res, next) => {
 
 })
 
-console.log("He")
 app.post('/fileexplorer', (req, res, next) => {
-  var current_path = path + req.fields.directory;
+  var current_path = path_use + req.body.directory;
   console.log(current_path);
   if (!fs.existsSync(current_path))
   {
@@ -89,27 +90,43 @@ app.listen(port, (err) => {
   console.log('server running on port ' + port);
 })
 
-app.post("/upload",(req, res, next) => {
 
-  for (const [key, value] of Object.entries(req.files)){
-    
-    var rawData = fs.readFileSync(value.path)
-    var new_path = path + req.fields.destination  +value.name;
-    fs.writeFile(new_path, rawData, function(err){
-      if(err) {return res.status(401).json({
-        title: 'Failed to upload '
-      }); return;}
+app.route('/upload')
+    .post(function (req, res, next) {
       
-  })
-  }
-  res.status(200).send("OK");
-} );
+      console.log("Hey");
 
-app.get("/download",(req, res, next) => {
-    res.download(path+ "/"+ "testfile.txt", function(err) {
-      if(err) {
-          console.log(err);
-      }
-      else console.log("Ok");
-  })
-} )
+        // var fstream;
+        // req.pipe(req.busboy);
+        // req.busboy.on('file', function (fieldname, file, filename) {
+        //     console.log("Uploading: " + filename);
+
+        //     //Path where image will be uploaded
+        //     fstream = fs.createWriteStream(__dirname + '/img/' + filename);
+        //     file.pipe(fstream);
+        //     fstream.on('close', function () {    
+        //         console.log("Upload Finished of " + filename);              
+        //         res.redirect('back');           //where to go next
+        //     });
+        // });
+    });
+
+    // app.post('/upload',
+    // // fileUpload({ createParentPath: true }),
+    // // filesPayloadExists,
+    // // fileExtLimiter(['.png', '.jpg', '.jpeg']),
+    // // fileSizeLimiter,
+    // (req, res) => {
+    //     // const files = req.files
+    //     // console.log(files)
+
+    //     // Object.keys(files).forEach(key => {
+    //     //     const filepath = path.join(path_use, 'files', files[key].name)
+    //     //     files[key].mv(filepath, (err) => {
+    //     //         if (err) return res.status(500).json({ status: "error", message: err })
+    //     //     })
+    //     // })
+
+    //     // return res.json({ status: 'success', message: Object.keys(files).toString() })
+    // }
+// )
