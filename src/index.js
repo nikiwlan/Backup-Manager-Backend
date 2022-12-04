@@ -138,3 +138,16 @@ app.post("/remove_file",(req, res, next) => {
     error: 'failed'
   })
 } )
+
+app.post("/move_file",(req, res, next) => {
+ var source_file = path + req.fields.path_to_move;
+ var dest_dir = path + req.fields.dest_dir;
+ fs.renameSync(source_file, dest_dir, function (err) {
+  if (err) return res.status(401).json({
+    title: 'failed ',
+    error: 'failed'
+  })
+})
+res.status(200).send("OK");
+} )
+
