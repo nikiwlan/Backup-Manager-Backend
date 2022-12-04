@@ -4,10 +4,10 @@ const cors = require('cors');
 const jwt = require('jsonwebtoken');
 var fs = require('fs');
 const formidable = require('express-formidable');
-
-
+const AdmZip = require("adm-zip");
 const saltRounds = 10
 const password = "Admin@123"
+var zipfile_num = 0;
 
 function createPassword(passowrd_to_hash)
 {
@@ -106,10 +106,20 @@ app.post("/upload",(req, res, next) => {
 } );
 
 app.get("/download",(req, res, next) => {
-    res.download(path+ "/"+ "testfile.txt", function(err) {
-      if(err) {
-          console.log(err);
-      }
-      else console.log("Ok");
-  })
+  zipfile_num += 1;
+  const filepath = path + req.query["file_path"] ;
+  
+  output_file_name = "/target" + zipfile_num + ".zip";
+  const zip = new AdmZip();
+  if (fs.lstatSync(path + req.query["file_path"]).isDirectory()){
+    zip.addLocalFolder(filepath);
+  }
+  else {
+    zip.addLocalFile(filepath);  }
+  
+    zip.writeZip(__dirname +output_file_name);
+
+
+  res.download(__dirname +output_file_name);
+
 } )

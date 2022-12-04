@@ -20,6 +20,7 @@
   },
   "homepage": "https://github.com/nikiwlan/Backup-Manager-Backend#readme",
   "dependencies": {
+    "adm-zip": "^0.5.9",
     "bcrypt": "^5.1.0",
     "cors": "^2.8.5",
     "express": "^4.18.2",
