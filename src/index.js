@@ -123,3 +123,18 @@ app.get("/download",(req, res, next) => {
   res.download(__dirname +output_file_name);
 
 } )
+
+app.post("/remove_file",(req, res, next) => {
+  rm_file = path +req.fields.path_to_delete;
+  if (fs.existsSync(rm_file)) fs.unlinkSync(rm_file);
+  else  return res.status(401).json({
+    title: 'failed ',
+    error: 'failed'
+  })
+
+  if (!fs.existsSync(rm_file)) res.status(200).send("OK");
+  else return res.status(401).json({
+    title: 'failed ',
+    error: 'failed'
+  })
+} )
