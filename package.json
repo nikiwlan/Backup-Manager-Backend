@@ -27,7 +27,8 @@
     "express-fileupload": "^1.4.0",
     "express-formidable": "^1.2.0",
     "jsonwebtoken": "^8.5.1",
-    "ssh2": "^1.11.0"
+    "ssh2": "^1.11.0",
+    "ssh2-sftp-client": "^9.0.4"
   },
   "devDependencies": {
     "nodemon": "^2.0.20"
