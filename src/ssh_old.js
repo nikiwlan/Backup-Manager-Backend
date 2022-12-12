@@ -1,3 +1,6 @@
+// This file is for reference purposes
+// Will be deleted later
+
 // https://github.com/mscdex/ssh2
 
 const { readFileSync } = require('fs');
