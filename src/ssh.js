@@ -136,7 +136,16 @@ app.get("/download",(req, res, next) => {
       }).on('data', (data) => {
         // console.log(data);
       });
-      stream.end('powershell Compress-Archive ' + filepath + ' ' + filepath + '.zip\r');
+      sftp.connect(ssh_config).then(() => {
+        stream.end('powershell Compress-Archive ' + filepath + ' ' + filepath + '.zip\r');
+      }).then(() => {
+        // Downloads a file at remote_read to dst_ using parallel reads for faster throughput.
+        return sftp.fastGet(filepath + ".zip", "C:/Users/erikc/" + filepath + ".zip");
+      }).then(() => {
+        return sftp.end();
+      }).catch(err => {
+        console.error(err.message);
+      });
     });
   }).on("error", (err) => {
     console.log(err.stack)
