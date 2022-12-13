@@ -37,6 +37,7 @@ var data = JSON.parse(fs.readFileSync( "./data.json", {encoding:'utf8', flag:'r'
 console.log(data)
 function checkPassword(passowrd_to_check, hash)
 {
+  console.log(passowrd_to_check, hash)
     return bcrypt.compareSync(passowrd_to_check, hash);
 }
 
@@ -150,4 +151,16 @@ app.post("/move_file",(req, res, next) => {
 })
 res.status(200).send("OK");
 } )
+
+
+app.post("/changePassword",(req, res, next) => {
+  if(req.fields.oldPassword  === password ){
+     password = req.fields.oldPassword;
+     res.status(200).send("OK");
+  }
+  else{
+    res.status(401).send("failed")
+  }
+ })
+
 
