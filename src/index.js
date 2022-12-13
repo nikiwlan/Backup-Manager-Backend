@@ -155,7 +155,7 @@ res.status(200).send("OK");
 
 app.post("/changePassword",(req, res, next) => {
   if(req.fields.oldPassword  === password ){
-     password = req.fields.oldPassword;
+     //password = req.fields.oldPassword;
      res.status(200).send("OK");
   }
   else{
