@@ -68,7 +68,6 @@ const path = "test_backup";
 
 app.post('/fileexplorer', (req, res, next) => {
   var current_path = path + req.fields.directory;
-  console.log(current_path);
   var file_list = [];
 
   sftp.connect(ssh_config)
@@ -89,7 +88,6 @@ app.post('/fileexplorer', (req, res, next) => {
         });
       }
     });
-    console.log(file_list);
     res.status(200).send(file_list);
   })
   .then(() => {
@@ -103,6 +101,7 @@ app.post('/fileexplorer', (req, res, next) => {
 
 app.post("/upload",(req, res, next) => {
     // TODO
+
     /*
   for (const [key, value] of Object.entries(req.files)){
     
@@ -126,7 +125,32 @@ app.post("/upload",(req, res, next) => {
 
 
 app.get("/download",(req, res, next) => {
-  // TODO
+  zipfile_num += 1;
+  const filepath = path + req.query["file_path"];
+
+  conn.on('ready', () => {
+    conn.shell((err, stream) => {
+      if (err) throw err;
+      stream.on('close', () => {
+        conn.end();
+      }).on('data', (data) => {
+        // console.log(data);
+      });
+      sftp.connect(ssh_config).then(() => {
+        stream.end('powershell Compress-Archive ' + filepath + ' ' + filepath + '.zip\r');
+      }).then(() => {
+        // Downloads a file at remote_read to dst_ using parallel reads for faster throughput.
+        return sftp.fastGet(filepath + ".zip", "C:/Users/erikc/" + filepath + ".zip");
+      }).then(() => {
+        return sftp.end();
+      }).catch(err => {
+        console.error(err.message);
+      });
+    });
+  }).on("error", (err) => {
+    console.log(err.stack)
+  }).connect(ssh_config);
+  
 });
 
 
