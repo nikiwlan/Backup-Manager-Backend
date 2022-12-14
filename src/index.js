@@ -5,6 +5,7 @@ const jwt = require("jsonwebtoken");
 var fs = require("fs");
 const formidable = require("express-formidable");
 const AdmZip = require("adm-zip");
+const { table } = require("console");
 const saltRounds = 10;
 const password = "Admin@123";
 var zipfile_num = 0;
@@ -40,16 +41,12 @@ console.log(data);
 function set_new_password(username, password, new_password) {
   if (checkUser(username, password, data["users"])) {
     data["users"][username] = createPassword(new_password);
-    fs.writeFile(
-      "./data.json",
-      JSON.stringify(data),
-      function (err) {
-        if (err) {
-          console.log(err);
-          return 0;
-        }
+    fs.writeFile("./data.json", JSON.stringify(data), function (err) {
+      if (err) {
+        console.log(err);
+        return 0;
       }
-    );
+    });
     return 1;
   }
   return 0;
@@ -174,13 +171,75 @@ app.post("/move_file", (req, res, next) => {
 });
 
 app.post("/changePassword", (req, res, next) => {
-  if (set_new_password("amin", req.fields.oldPassword, String(req.fields.newPassword))){
+  if (
+    set_new_password(
+      "amin",
+      req.fields.oldPassword,
+      String(req.fields.newPassword)
+    )
+  ) {
     res.status(200).send("OK");
-  }
-  else {
+  } else {
     res.status(401).send("failed");
   }
 });
 
+app.post("/addBackupServer", (req, res, next) => {
+  if (
+    addBackupServerToDataFile(
+      req.fields.serverAddress,
+      req.fields.username,
+      req.fields.path,
+      req.fields.port
+    )
+  ) {
+    res.status(200).send("OK");
+  } else {
+    res.status(401).send("failed");
+  }
+});
 
+/* function addBackupServerToDataFile(serverAddress, username, path, port) {
+  console.group("reachedAddBackupServerAddd");
+  if ((serverAddress != "", username != "", path != "", port != "")) {
+    //TODO später prüfen ob korrekte Eingaben ob server existiert ?
+    data["users"][username];
+    var obj = {
+      data,
+      backup: [],
+    };
+    obj.backup.push({ serverAddress: serverAddress, username: username });
+    fs.writeFile("./data.json", JSON.stringify(obj), function (err) {
+      if (err) {
+        console.log(err);
+        return 0;
+      }
+    });
+    return 1;
+  }
+  return 0;
+} */
 
+function addBackupServerToDataFile(serverAddress, username, path, port) {
+  console.group("reachedAddBackupServerAddd");
+  if ((serverAddress != "", username != "", path != "", port != "")) {
+    //TODO später prüfen ob korrekte Eingaben ob server existiert ?
+    fs.readFile("data.json", function (err, content) {
+      if (err) throw err;
+      var parseJson = JSON.parse(content);
+      parseJson.table.push({
+        serverAddress: serverAddress,
+        username: username,
+      });
+      fs.writeFile("data.json", JSON.stringify(obj), function (err) {
+        if (err) return 0;
+      });
+    });
+    return 1;
+  }
+  return 0;
+}
+// https://stackoverflow.com/questions/36856232/write-add-data-in-json-file-using-node-js
+// wie man etwas an einen json file appended
+
+// { backup: [{"username": "dadad", "port": 443, ...}]
