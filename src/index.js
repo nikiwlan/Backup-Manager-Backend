@@ -227,7 +227,8 @@ function addBackupServerToDataFile(serverAddress, username, path, port) {
 
     fs.readFile("data.json", function (err, content) {
       if (err) throw err;
-      var parseJson = [JSON.parse(content)];
+      var parseJson = []
+      parseJson = JSON.parse(content);
       const newBackupServerInformations = {
         "backup": {
           "serverAddress": serverAddress,
