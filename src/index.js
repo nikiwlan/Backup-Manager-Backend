@@ -224,14 +224,18 @@ function addBackupServerToDataFile(serverAddress, username, path, port) {
   console.group("reachedAddBackupServerAddd");
   if ((serverAddress != "", username != "", path != "", port != "")) {
     //TODO später prüfen ob korrekte Eingaben ob server existiert ?
+
     fs.readFile("data.json", function (err, content) {
       if (err) throw err;
-      var parseJson = JSON.parse(content);
-      parseJson.table.push({
-        serverAddress: serverAddress,
-        username: username,
-      });
-      fs.writeFile("data.json", JSON.stringify(obj), function (err) {
+      var parseJson = [JSON.parse(content)];
+      const newBackupServerInformations = {
+        "backup": {
+          "serverAddress": serverAddress,
+          "username": username,
+        }
+      }
+      parseJson.push(newBackupServerInformations)
+      fs.writeFile("data.json", JSON.stringify(parseJson), function (err) {
         if (err) return 0;
       });
     });
@@ -239,6 +243,7 @@ function addBackupServerToDataFile(serverAddress, username, path, port) {
   }
   return 0;
 }
+// https://www.geeksforgeeks.org/how-to-add-data-in-json-file-using-node-js/
 // https://stackoverflow.com/questions/36856232/write-add-data-in-json-file-using-node-js
 // wie man etwas an einen json file appended
 
