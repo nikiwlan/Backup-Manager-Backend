@@ -101,6 +101,7 @@ app.post('/fileexplorer', (req, res, next) => {
 
 app.post("/upload",(req, res, next) => {
     // TODO
+    console.log("/upload");
 
     /*
   for (const [key, value] of Object.entries(req.files)){
@@ -156,9 +157,28 @@ app.get("/download",(req, res, next) => {
 
 app.post("/remove_file",(req, res, next) => {
     // TODO
-});
+    const test_path = "test_backup/test.txt";
+    console.log("/remove_file --> " + test_path);
+
+    sftp.connect(ssh_config)
+      .then(() => {
+        return sftp.delete(test_path);
+      })
+      .then(() => {
+        res.status(200).send("OK");
+        sftp.end();
+      })
+      .catch(err => {
+        console.error(err.message);
+        return res.status(401).json({
+          title: "failed ",
+          error: "failed",
+        });
+      });
+    });
 
 
 app.post("/move_file",(req, res, next) => {
    // TODO
+   console.log("/move_file --> " + req);
 });
