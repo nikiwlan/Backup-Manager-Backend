@@ -199,26 +199,6 @@ app.post("/addBackupServer", (req, res, next) => {
   }
 });
 
-/* function addBackupServerToDataFile(serverAddress, username, path, port) {
-  console.group("reachedAddBackupServerAddd");
-  if ((serverAddress != "", username != "", path != "", port != "")) {
-    //TODO später prüfen ob korrekte Eingaben ob server existiert ?
-    data["users"][username];
-    var obj = {
-      data,
-      backup: [],
-    };
-    obj.backup.push({ serverAddress: serverAddress, username: username });
-    fs.writeFile("./data.json", JSON.stringify(obj), function (err) {
-      if (err) {
-        console.log(err);
-        return 0;
-      }
-    });
-    return 1;
-  }
-  return 0;
-} */
 
 function addBackupServerToDataFile(serverAddress, username, path, port) {
   console.group("reachedAddBackupServerAddd");
@@ -227,8 +207,7 @@ function addBackupServerToDataFile(serverAddress, username, path, port) {
 
     fs.readFile("data.json", function (err, content) {
       if (err) throw err;
-      var parseJson = []
-      parseJson = JSON.parse(content);
+      var parseJson = [JSON.parse(content)];
       const newBackupServerInformations = {
         "backup": {
           "serverAddress": serverAddress,
