@@ -67,7 +67,7 @@ var ssh_config = {
 const path = "test_backup";
 
 app.post('/fileexplorer', (req, res, next) => {
-  var current_path = path + req.fields.directory;
+  var current_path = path + "/" + req.fields.directory;
   var file_list = [];
 
   sftp.connect(ssh_config)
@@ -95,6 +95,7 @@ app.post('/fileexplorer', (req, res, next) => {
   })
   .catch(err => {
     console.error(err.message);
+    sftp.end();
   });
 });
 
