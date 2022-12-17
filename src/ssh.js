@@ -5,8 +5,9 @@ const jwt = require('jsonwebtoken');
 var fs = require('fs');
 const formidable = require('express-formidable');
 const AdmZip = require("adm-zip");
-const saltRounds = 10
-const password = "Admin@123"
+const saltRounds = 10;
+const password = "Admin@123";
+const path_os = require('path');
 var zipfile_num = 0;
 const app = express();
 app.use(cors());
