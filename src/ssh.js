@@ -171,6 +171,7 @@ app.post("/remove_file",(req, res, next) => {
       })
       .catch(err => {
         console.error(err.message);
+        sftp.end();
         return res.status(401).json({
           title: "failed ",
           error: "failed",
