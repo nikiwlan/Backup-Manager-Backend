@@ -43,11 +43,11 @@ function getDirectories(current_path)
   return return_file_list;
 }
 
-
+var data_path = path_os.join(__dirname, "Data", "Save", "data.json") 
 const app = express();
 app.use(cors());
 app.use(formidable());
-var data = JSON.parse(fs.readFileSync(path_os.join(__dirname, "Data", "Save", "data.json") , {encoding:'utf8', flag:'r'}))
+var data = JSON.parse(fs.readFileSync(data_path, {encoding:'utf8', flag:'r'}))
 console.log(data)
 function checkPassword(passowrd_to_check, hash)
 {
@@ -245,6 +245,77 @@ app.post("/remove_file",(req, res, next) => {
   })
 } )
 
+function set_new_password(username, password, new_password) {
+  if (checkUser(username, password, data["users"])) {
+  data["users"][username] = createPassword(new_password);
+  fs.writeFile("./data.json", JSON.stringify(data), function (err) {
+  if (err) {
+  console.log(err);
+  return 0;
+  }
+  });
+  return 1;
+  }
+  return 0;
+  }
+
+  app.post("/changePassword", (req, res, next) => {
+    if (
+    set_new_password(
+    "amin",
+    req.fields.oldPassword,
+    String(req.fields.newPassword)
+    )
+    ) {
+    res.status(200).send("OK");
+    } else {
+    res.status(401).send("failed");
+    }
+    });
+
+// app.post("/addBackupServer", (req, res, next) => {
+//   if (
+//   addBackupServerToDataFile(
+//   req.fields.serverAddress,
+//   req.fields.username,
+//   req.fields.path,
+//   req.fields.port
+//   )
+//   ) {
+//   res.status(200).send("OK");
+//   } else {
+//   res.status(401).send("failed");
+//   }
+//   });
+  
+
+  function addBackupServerToDataFile(serverAddress, username, path, port) {
+
+  if ((serverAddress != "", username != "", path != "", port != "")) {
+  //TODO später prüfen ob korrekte Eingaben ob server existiert ?
+  
+ if ("backup" in data){
+
+ }
+ else data["backup"]= []
+
+
+  data["backup"].push({
+    "serverAddress": serverAddress,
+    "username": username,
+    "port": port,
+    "path": path
+    })
+
+    fs.writeFile(data_path, JSON.stringify(data), function (err) {
+      if (err) {
+      console.log(err);
+      return 0;
+      }
+      });
+  }}
+
+  addBackupServerToDataFile("222","2222","2222",2222)
 
 // app.post('/mkdir', (req, res, next) => {
 //   var current_path = path + req.fields.directory;
