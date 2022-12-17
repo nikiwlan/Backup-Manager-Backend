@@ -181,5 +181,25 @@ app.post("/remove_file",(req, res, next) => {
 
 app.post("/move_file",(req, res, next) => {
    // TODO
+   const test_path_from = "test_backup/test.txt";
+   const test_path_to = "test_backup/hey/test.txt";
+
    console.log("/move_file --> " + req);
+
+   sftp.connect(ssh_config)
+   .then(() => {
+     return sftp.rename(test_path_from, test_path_to);
+   })
+   .then(() => {
+     res.status(200).send("OK");
+     sftp.end();
+   })
+   .catch(err => {
+     console.error(err.message);
+     sftp.end();
+     return res.status(401).json({
+       title: "failed ",
+       error: "failed",
+     });
+   });
 });
