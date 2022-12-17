@@ -128,7 +128,8 @@ app.post("/upload",(req, res, next) => {
 
 app.get("/download",(req, res, next) => {
   zipfile_num += 1;
-  const filepath = path + req.query["file_path"];
+  const filepath = path + "/" + req.query["file_name"];
+  console.log(filepath);
 
   conn.on('ready', () => {
     conn.shell((err, stream) => {
