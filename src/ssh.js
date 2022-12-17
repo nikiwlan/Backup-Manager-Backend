@@ -151,7 +151,8 @@ app.get("/download",(req, res, next) => {
       });
     });
   }).on("error", (err) => {
-    console.log(err.stack)
+    console.log(err.stack);
+    conn.end();
   }).connect(ssh_config);
   
 });
