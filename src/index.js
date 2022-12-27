@@ -7,8 +7,12 @@ const formidable = require('express-formidable');
 const AdmZip = require("adm-zip");
 const saltRounds = 10
 const password = "Admin@123"
+<<<<<<< HEAD
 const path_os = require('path')
 const { generateKeyPair } = require('crypto');
+=======
+const path_os = require('path');
+>>>>>>> 0d49a97a74b7d41bd856aa4b4e875bc7a977b253
 var zipfile_num = 0;
 let access_tokens = []
 function createPassword(passowrd_to_hash)
