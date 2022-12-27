@@ -7,7 +7,8 @@ const formidable = require('express-formidable');
 const AdmZip = require("adm-zip");
 const saltRounds = 10
 const password = "Admin@123"
-const path_os = require('node:path')
+const path_os = require('path')
+const { generateKeyPair } = require('crypto');
 var zipfile_num = 0;
 let access_tokens = []
 function createPassword(passowrd_to_hash)
@@ -20,6 +21,8 @@ function createFolder(path_folder){
     fs.mkdirSync(path_folder);
   
 }
+
+const corsOptions = {origin: ["http://192.168.0.103:8080","http://localhost:8080"], optionsSuccessStatus: 200}
 
 
 const path_backup = path_os.join(__dirname, "Data", "Backup");
@@ -45,7 +48,7 @@ function getDirectories(current_path)
 
 var data_path = path_os.join(__dirname, "Data", "Save", "data.json") 
 const app = express();
-app.use(cors());
+app.use(cors(corsOptions));
 app.use(formidable());
 var data = JSON.parse(fs.readFileSync(data_path, {encoding:'utf8', flag:'r'}))
 console.log(data)
@@ -77,6 +80,33 @@ app.post('/login', (req, res, next) => {
         title: 'login sucess',
         token: token
       })
+
+
+})
+
+app.post('/mkdir', (req, res, next) => {
+
+  if (!verify_token(req.fields.auth)) return res.status(401).json({
+    title: 'Failed',
+    error: 'Failed'
+  })
+  var val = []
+  if (req.fields.directory) val =  req.fields.directory.split(",");
+  if (check_path(val)) return res.status(401).json({
+    title: 'Failed',
+    error: 'Failed'
+  })
+  current_path = createPath(path_backup, val )
+  fs.mkdir(path_os.join(current_path, req.fields.dirname), (err) => {
+    if (err) {
+      res.status(401).json({
+        title: 'Failed',
+        error: 'Failed'
+      });
+    }}
+    )
+
+    res.status(200).send("OK");
 
 
 })
@@ -315,7 +345,7 @@ function set_new_password(username, password, new_password) {
       });
   }}
 
-  addBackupServerToDataFile("222","2222","2222",2222)
+  // addBackupServerToDataFile("222","2222","2222",2222)
 
 // app.post('/mkdir', (req, res, next) => {
 //   var current_path = path + req.fields.directory;
