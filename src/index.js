@@ -7,12 +7,18 @@ const formidable = require('express-formidable');
 const AdmZip = require("adm-zip");
 const saltRounds = 10
 const password = "Admin@123"
-<<<<<<< HEAD
-const path_os = require('path')
-const { generateKeyPair } = require('crypto');
-=======
 const path_os = require('path');
->>>>>>> 0d49a97a74b7d41bd856aa4b4e875bc7a977b253
+let sftpClient = require('ssh2-sftp-client');
+const { exec } = require("child_process");
+const schedule = require('node-schedule');
+/*
+var ssh_config = {
+  host: 'localhost',
+  username: 'ssh_server',
+  password: 'admin'
+};
+*/
+const { generateKeyPair } = require('crypto');
 var zipfile_num = 0;
 let access_tokens = []
 function createPassword(passowrd_to_hash)
@@ -25,6 +31,7 @@ function createFolder(path_folder){
     fs.mkdirSync(path_folder);
   
 }
+
 
 const corsOptions = {origin: ["http://192.168.0.103:8080","http://localhost:8080"], optionsSuccessStatus: 200}
 
@@ -50,12 +57,36 @@ function getDirectories(current_path)
   return return_file_list;
 }
 
+function rsyncAll()
+{
+  for (var server of data["backup"] ){
+    var cmd = "rsync -avxP --delete \'ssh -i " + path_os.join(path_ssh_folder, "id_rsa" ) + "\' " + path_backup + " " +server["username"] +"@" + server["serverAddress"] + ":" + server["path"]
+    exec(cmd, (error, stdout, stderr) => {
+      if (error) {
+          console.log(`error: ${error.message}`);
+          return;
+      }
+      if (stderr) {
+          console.log(`stderr: ${stderr}`);
+          return;
+      }
+      console.log(`stdout: ${stdout}`);
+  });
+  }
+  
+
+}
+
+
+
 var data_path = path_os.join(__dirname, "Data", "Save", "data.json") 
 const app = express();
 app.use(cors(corsOptions));
 app.use(formidable());
 var data = JSON.parse(fs.readFileSync(data_path, {encoding:'utf8', flag:'r'}))
 console.log(data)
+rsyncAll()
+schedule.scheduleJob('38 * * * *', () => { rsyncAll()})
 function checkPassword(passowrd_to_check, hash)
 {
     return bcrypt.compareSync(passowrd_to_check, hash);
@@ -87,6 +118,67 @@ app.post('/login', (req, res, next) => {
 
 
 })
+
+
+function addBackupServerToDataFile(serverAddress, username, path) {
+
+  if ((serverAddress != "", username != "", path != "")) {
+  //TODO später prüfen ob korrekte Eingaben ob server existiert ?
+  
+ if ("backup" in data){
+
+ }
+ else data["backup"]= []
+ check = false
+ for (var server of data["backup"] ){
+     if (server["serverAddress"] === serverAddress) check = true}
+  if (check) return
+
+  data["backup"].push({
+    "serverAddress": serverAddress,
+    "username": username,
+    "path": path
+    })
+
+    fs.writeFile(data_path, JSON.stringify(data), function (err) {
+      if (err) {
+      console.log(err);
+      return 0;
+      }
+      });
+  }}
+
+app.post('/sshcheck', (req, res, next) => {
+  let sftp = new sftpClient();
+  var ssh_config = {
+    host: req.fields.host,
+    username: req.fields.username,
+    privateKey: fs.readFileSync(path_os.join(path_ssh_folder, "id_rsa" ))
+  };
+
+
+  sftp.connect(ssh_config)
+  .then(() => {
+    return sftp.list(req.fields.path);
+  })
+  .then(res_data => {
+    console.log(res_data);
+    addBackupServerToDataFile(req.fields.host, req.fields.username, req.fields.path);
+  })
+  .then(() => {
+    sftp.end();
+    res.status(200).send("Ok");
+  })
+  .catch(err => {
+    console.error(err.message);
+    sftp.end();
+    res.status(401).json({
+      title: 'Failed',
+      error: 'Failed'
+    });
+  });
+  
+});
 
 app.post('/mkdir', (req, res, next) => {
 
@@ -154,32 +246,8 @@ function createPath(original_path, path_list){
     return current_path;
 
 }
-app.post('/fileexplorer', (req, res, next) => {
 
-  if (!verify_token(req.fields.auth)) return res.status(401).json({
-    title: 'Failed',
-    error: 'Failed'
-  })
-  var val = []
-  if (req.fields.directory) val =  req.fields.directory.split(",");
-  if (check_path(val)) return res.status(401).json({
-    title: 'Failed',
-    error: 'Failed'
-  })
-  current_path = createPath(path_backup, val )
-  
-  console.log(current_path);
-  if (!fs.existsSync(current_path))
-  {
-    console.log("failed Dir")
-    return  res.status(401).json({
-      title: 'Failed',
-      error: 'Failed'
-    })
-  }
-  var file_list = getDirectories(current_path);
-  res.status(200).send(file_list);
-})
+
 
 const port = process.env.PORT || 5000;
 
@@ -293,19 +361,7 @@ function set_new_password(username, password, new_password) {
   return 0;
   }
 
-  app.post("/changePassword", (req, res, next) => {
-    if (
-    set_new_password(
-    "amin",
-    req.fields.oldPassword,
-    String(req.fields.newPassword)
-    )
-    ) {
-    res.status(200).send("OK");
-    } else {
-    res.status(401).send("failed");
-    }
-    });
+
 
 // app.post("/addBackupServer", (req, res, next) => {
 //   if (
@@ -323,32 +379,41 @@ function set_new_password(username, password, new_password) {
 //   });
   
 
-  function addBackupServerToDataFile(serverAddress, username, path, port) {
 
-  if ((serverAddress != "", username != "", path != "", port != "")) {
-  //TODO später prüfen ob korrekte Eingaben ob server existiert ?
+app.post('/fileexplorer', (req, res, next) => {
+
+  if (!verify_token(req.fields.auth)) return res.status(401).json({
+    title: 'Failed',
+    error: 'Failed'
+  })
+  var val = []
+  if (req.fields.directory) val =  req.fields.directory.split(",");
+  if (check_path(val)) return res.status(401).json({
+    title: 'Failed',
+    error: 'Failed'
+  })
+  current_path = createPath(path_backup, val )
   
- if ("backup" in data){
-
- }
- else data["backup"]= []
-
-
-  data["backup"].push({
-    "serverAddress": serverAddress,
-    "username": username,
-    "port": port,
-    "path": path
+  console.log(current_path);
+  if (!fs.existsSync(current_path))
+  {
+    console.log("failed Dir")
+    return  res.status(401).json({
+      title: 'Failed',
+      error: 'Failed'
     })
+  }
+  var file_list = getDirectories(current_path);
+  res.status(200).send(file_list);
+})
 
-    fs.writeFile(data_path, JSON.stringify(data), function (err) {
-      if (err) {
-      console.log(err);
-      return 0;
-      }
-      });
-  }}
-
+app.post("/changePassword", (req, res, next) => {
+  if (set_new_password("amin",req.fields.oldPassword, String(req.fields.newPassword))) {
+    res.status(200).send("OK");
+  } else {
+  res.status(401).send("failed");
+  }
+});
   // addBackupServerToDataFile("222","2222","2222",2222)
 
 // app.post('/mkdir', (req, res, next) => {
