@@ -149,6 +149,10 @@ function addBackupServerToDataFile(serverAddress, username, path) {
   }}
 
 app.post('/sshcheck', (req, res, next) => {
+  if (!verify_token(req.fields.auth)) return res.status(401).json({
+    title: 'Failed',
+    error: 'Failed'
+  })
   let sftp = new sftpClient();
   var ssh_config = {
     host: req.fields.host,
@@ -405,6 +409,56 @@ app.post('/fileexplorer', (req, res, next) => {
   }
   var file_list = getDirectories(current_path);
   res.status(200).send(file_list);
+})
+
+function getbackup()
+{
+  return data["backup"]
+}
+app.post('/getbackupserver', (req, res, next) => {
+
+  if (!verify_token(req.fields.auth)) return res.status(401).json({
+    title: 'Failed',
+    error: 'Failed'
+  })
+  res.status(200).send(getbackup())
+})
+
+function rmServer(serverAddress) {
+
+  if (serverAddress != "") {
+
+ if ("backup" in data){
+
+ }
+ else data["backup"]= []
+ /*
+ t = []
+ for (var i = 0; i < data["backup"].length; i++) { 
+  if (data["backup"][i]["serverAddress"] === serverAddress) 
+  t.push(i)}
+ if(t.length > 0) delete data["backup"][t[0]]
+*/
+new_data = []
+ for (var i = 0; i < data["backup"].length; i++) { if (data["backup"][i]["serverAddress"] != serverAddress)  new_data.push(data["backup"][i])}
+data["backup"] = new_data;
+
+fs.writeFile(data_path, JSON.stringify(data), function (err) {
+      if (err) {
+      console.log(err);
+      return 0;
+      }
+      });
+  }}
+
+app.post('/removeserver', (req, res, next) => {
+
+  if (!verify_token(req.fields.auth)) return res.status(401).json({
+    title: 'Failed',
+    error: 'Failed'
+  })
+  rmServer(req.fields.rmserver);
+  res.status(200).send("Ok")
 })
 
 app.post("/changePassword", (req, res, next) => {
