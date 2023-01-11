@@ -33,7 +33,7 @@ function createFolder(path_folder){
 }
 
 
-const corsOptions = {origin: ["http://192.168.0.103:8080","http://localhost:8080"], optionsSuccessStatus: 200}
+const corsOptions = {origin: ["http://192.168.0.107:8080", "http://localhost:8080"], optionsSuccessStatus: 200}
 
 
 const path_backup = path_os.join(__dirname, "Data", "Backup");
@@ -105,10 +105,7 @@ app.post('/login', (req, res, next) => {
 
     var status = checkUser(req.fields.username, req.fields.password, data["users"])
     console.log(status);
-    if (status == -1) return res.status(401).json({
-        title: 'invalid username or ',
-        error: 'invalid credentials'
-      })
+    if (status == -1) return;
       console.log("ok");
       let token = jwt.sign({ userId: req.fields.username}, 'secretkey');
       return res.status(200).json({
@@ -239,33 +236,32 @@ function check_path(path_list)
   } )
   return false;
 }
+
+// sertzt den Pfad zusammen.
 function createPath(original_path, path_list){
 
   var current_path= original_path;
 
-
-    path_list.forEach((item) => {
+  // hinzufügen der Pfade aus der path_list um den Pfad zu bilden.
+  path_list.forEach((item) => {
       current_path = path_os.join(current_path, item)
-    } )
-    return current_path;
-
+   } )
+  // senden des Pfads
+  return current_path;
 }
 
 
 
 const port = process.env.PORT || 5000;
 
-app.listen(port, (err) => {
-  if (err) return console.log(err);
-  console.log('server running on port ' + port);
-})
-
 app.post("/upload",(req, res, next) => {
-
+  // Token verifizieren
   if (!verify_token(req.fields.auth)) return res.status(401).json({
     title: 'Failed',
     error: 'Failed'
   })
+
+  // Pfad überprüfen
   var val = []
   if (req.fields.directory) val =  req.fields.directory.split(",");
   if (check_path(val)) return res.status(401).json({
@@ -274,6 +270,7 @@ app.post("/upload",(req, res, next) => {
   })
   current_path = createPath(path_backup, val )
 
+  // speichern der gesendeten Dateien.
   for (const [key, value] of Object.entries(req.files)){
     
     var rawData = fs.readFileSync(value.path)
@@ -364,29 +361,12 @@ function set_new_password(username, password, new_password) {
   }
   return 0;
   }
-
-
-
-// app.post("/addBackupServer", (req, res, next) => {
-//   if (
-//   addBackupServerToDataFile(
-//   req.fields.serverAddress,
-//   req.fields.username,
-//   req.fields.path,
-//   req.fields.port
-//   )
-//   ) {
-//   res.status(200).send("OK");
-//   } else {
-//   res.status(401).send("failed");
-//   }
-//   });
   
 
 
 app.post('/fileexplorer', (req, res, next) => {
 
-  if (!verify_token(req.fields.auth)) return res.status(401).json({
+  if (!verify_token(req.fields.auth)) return ;res.status(401).json({
     title: 'Failed',
     error: 'Failed'
   })
@@ -432,13 +412,8 @@ function rmServer(serverAddress) {
 
  }
  else data["backup"]= []
- /*
- t = []
- for (var i = 0; i < data["backup"].length; i++) { 
-  if (data["backup"][i]["serverAddress"] === serverAddress) 
-  t.push(i)}
- if(t.length > 0) delete data["backup"][t[0]]
-*/
+
+
 new_data = []
  for (var i = 0; i < data["backup"].length; i++) { if (data["backup"][i]["serverAddress"] != serverAddress)  new_data.push(data["backup"][i])}
 data["backup"] = new_data;
@@ -468,31 +443,10 @@ app.post("/changePassword", (req, res, next) => {
   res.status(401).send("failed");
   }
 });
-  // addBackupServerToDataFile("222","2222","2222",2222)
 
-// app.post('/mkdir', (req, res, next) => {
-//   var current_path = path + req.fields.directory;
-//   console.log(current_path);
-//   if (!fs.existsSync(current_path))
-//   {
-//     console.log("failed Dir")
-//     return res.status(401).json({
-//           title: 'path does not exist ',
-//           error: 'invalid credentials'
-//         })
-//   }
-//   var file_list = getDirectories(current_path);
-//   res.status(200).send(file_list);
-// })
-// app.post("/move_file",(req, res, next) => {
-//  var source_file = path + req.fields.path_to_move;
-//  var dest_dir = path + req.fields.dest_dir;
-//  fs.renameSync(source_file, dest_dir, function (err) {
-//   if (err) return res.status(401).json({
-//     title: 'failed ',
-//     error: 'failed'
-//   })
-// })
-// res.status(200).send("OK");
-// } )
 
+
+app.listen(port, (err) => {
+  if (err) return console.log(err);
+  console.log('server running on port ' + port);
+})
