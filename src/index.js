@@ -366,7 +366,7 @@ function set_new_password(username, password, new_password) {
 
 app.post('/fileexplorer', (req, res, next) => {
 
-  if (!verify_token(req.fields.auth)) return ;res.status(401).json({
+  if (!verify_token(req.fields.auth)) res.status(401).json({
     title: 'Failed',
     error: 'Failed'
   })
