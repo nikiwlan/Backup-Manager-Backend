@@ -4,8 +4,14 @@ Das Frontend befindet sich [hier](https://github.com/Erik966/Backup-Manager-Fron
 
 
 ## Set-Up
-[Nodemon](https://nodemon.io/) überwacht alle Änderungen im Quellcode und startet den Server automatisch neu; perfekt für die Entwicklung.  
-Um den Server mit nodemon auszuführen:  
+1. Clone Repo
+2. Move to directory `Backup-Manager-Backend`
+3. Run `npm install`
+4. Go to Frontend and follow Set-Up
+
+## Run
+Start Backend via:
 ```bash
-npm run dev
+node .\src\index.js
 ```
+Don't forget to start Frontend too.
