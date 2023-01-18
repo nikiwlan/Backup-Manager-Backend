@@ -11,6 +11,6 @@ The frontend is located [here](https://github.com/Erik966/Backup-Manager-Fronten
 ## Run
 Start Backend via:
 ```bash
-node .\src\index.js
+npm run start
 ```
 Don't forget to start the Frontend too.
