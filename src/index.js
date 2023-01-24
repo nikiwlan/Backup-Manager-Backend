@@ -203,7 +203,7 @@ app.post('/sshcheck', (req, res, next) => {
   .then(() => {
     sftp.end();
     return res.status(200).json({
-      secret:setSecret(req.fields.hostname)
+      secret:setSecret(req.fields.username)
    })
   })
   .catch(err => {
@@ -412,12 +412,21 @@ app.post("/remove_file",(req, res, next) => {
 function set_new_password(username, password, new_password) {
   if (checkUser(username, password, data["users"])) {
   data["users"][username] = createPassword(new_password);
+  fs.writeFile(data_path, JSON.stringify(data), function (err) {
+    if (err) {
+    console.log(err);
+    return 0;
+    }
+    });
+
+    /*
   fs.writeFile("./data.json", JSON.stringify(data), function (err) {
   if (err) {
   console.log(err);
   return 0;
   }
   });
+  */
   return 1;
   }
   return 0;
@@ -518,7 +527,9 @@ app.post('/removeserver', (req, res, next) => {
 })
 
 app.post("/changePassword", (req, res, next) => {
-  if (set_new_password("amin",req.fields.oldPassword, String(req.fields.newPassword))) {
+  let old_passwort = CryptoJS.AES.decrypt(req.fields.oldPassword,user_encrypt[req.fields.username]["ky"]).toString(CryptoJS.enc.Utf8) 
+  let newPassword = CryptoJS.AES.decrypt(req.fields.newPassword,user_encrypt[req.fields.username]["ky"]).toString(CryptoJS.enc.Utf8) 
+  if (set_new_password(req.fields.username,old_passwort, newPassword)) {
     res.status(200).send("OK");
   } else {
   res.status(401).send("failed");
