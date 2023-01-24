@@ -96,7 +96,7 @@ app.use(formidable());
 var data = JSON.parse(fs.readFileSync(data_path, {encoding:'utf8', flag:'r'}))
 console.log(data)
 rsyncAll()
-schedule.scheduleJob('38 * * * *', () => { rsyncAll()})
+schedule.scheduleJob('0 0 * * *', () => { rsyncAll()})
 function checkPassword(passowrd_to_check, hash)
 {
     return bcrypt.compareSync(passowrd_to_check, hash);
@@ -187,7 +187,7 @@ app.post('/sshcheck', (req, res, next) => {
   let sftp = new sftpClient();
   var ssh_config = {
     host: req.fields.host,
-    username: req.fields.username,
+    username: req.fields.hostname,
     privateKey: fs.readFileSync(path_os.join(path_ssh_folder, "id_rsa" ))
   };
 
@@ -198,12 +198,12 @@ app.post('/sshcheck', (req, res, next) => {
   })
   .then(res_data => {
     console.log(res_data);
-    addBackupServerToDataFile(req.fields.host, req.fields.username, req.fields.path);
+    addBackupServerToDataFile(req.fields.host, req.fields.hostname, req.fields.path);
   })
   .then(() => {
     sftp.end();
     return res.status(200).json({
-      secret:setSecret(req.fields.username)
+      secret:setSecret(req.fields.hostname)
    })
   })
   .catch(err => {
